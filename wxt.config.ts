@@ -4,4 +4,14 @@ import { defineConfig } from "wxt";
 export default defineConfig({
 	extensionApi: "chrome",
 	modules: ["@wxt-dev/module-react"],
+	manifest: {
+		icons: {
+			16: '/icon/icon-16.png',
+			24: '/icon/icon-24.png',
+			32: '/icon/icon-32.png',
+			45: '/icon/icon-48.png',
+			96: '/icon/icon-96.png',
+			128: '/icon/icon-128.png',
+		}
+	}
 });
