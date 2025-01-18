@@ -1,6 +1,6 @@
 {
-	"name": "wxt-react-starter",
-	"description": "manifest.json description",
+	"name": "chorebot",
+	"description": "simple helper to do online chores",
 	"version": "0.1.0",
 	"private": true,
 	"scripts": {
