@@ -27,6 +27,22 @@ Here are some capabilities that we will need to verify:
 - [ ] Create workspace selection dropdown, where user to scope the context to a given workspace
 - [ ] Create Status report list where user can see what the machine is doing
 - [ ] Defined intents/step types
+- [ ] Insert input into focused element in active tab
+  currently using the following stub to test different websites from the dev console, it works on basic forms but derps on any iframe-concoction:
+  ```javascript
+// Create a custom ClipboardEvent for "paste"
+const pasteEvent = new ClipboardEvent('paste', {
+  bubbles: true,
+  cancelable: true,
+  clipboardData: new DataTransfer() // Clipboard data object
+});
+
+// Set the clipboard data (text)
+pasteEvent.clipboardData.setData('text/plain', 'This is pasted text.');
+
+// Dispatch the paste event on the target element
+document.activeElement.dispatchEvent(pasteEvent);
+  ```
 
 > [!WARNING]
 > Seems like ZenUML is too new for GH support quite yet, so go to the MermaidJS Live Editor to see what this is all about.

@@ -12,6 +12,7 @@ export default defineConfig({
 			45: '/icon/icon-48.png',
 			96: '/icon/icon-96.png',
 			128: '/icon/icon-128.png',
-		}
-	}
+		},
+		permissions: ["clipboardRead"],
+	},
 });
