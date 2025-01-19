@@ -13,6 +13,6 @@ export default defineConfig({
 			96: '/icon/icon-96.png',
 			128: '/icon/icon-128.png',
 		},
-		permissions: ["clipboardRead"],
+		optional_permissions: ["activeTab", "clipboardRead", "clipboardWrite"],
 	},
 });

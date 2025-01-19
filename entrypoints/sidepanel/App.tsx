@@ -33,7 +33,7 @@ interface Task {
 const tasks: Task[] = [
 	{ id: '1', text: 'Data-entry into gsheet', status: 'working' },
 	{ id: '2', text: 'Plan spreadsheet data-entry', status: 'completed' },
-	{ id: '3', text: 'Search websites for input:', status: 'completed' },
+	{ id: '3', text: 'Research websites for input:', status: 'completed' },
 	{ id: '4', text: 'https://a16z.com/', status: 'completed', indent: true },
 	{ id: '5', text: 'https://www.openocean.vc/', status: 'completed', indent: true },
 	{ id: '6', text: 'https://lakestar.com/', status: 'completed', indent: true },
@@ -50,14 +50,44 @@ export default function Popup() {
 	const [command, setCommand] = React.useState("fill in the blanks")
 
 	// TODO: Abstract this into a central place later
-	const paste = (text: string) => {
+	const requestPermission = (permission_type: 'clipboardRead' | 'clipboardWrite', origin: string): boolean => {
+		//const queryOpts = { name: 'clipboard-read', allowWithoutGesture: false };
+		const queryOpts = { permissions: [permission_type], origins: [origin]};
+
+		chrome.permissions.request(queryOpts, (granted) => {
+			if(granted) {
+				console.log("yay");
+				return true;
+			} else {
+				console.log("nope")
+				return false;
+			}
+		});
+	}
+
+	const insertByPasting = async (activeElement: Element, text: string) => {
+		// Inside the active tab, paste text into the active element 
 		const data = new DataTransfer();
 		data.setData('text', text);
 
-		console.log("🧨 firing event on active el", activeElement);
-		activeElement.dispatchEvent(
-			new ClipboardEvent('paste', { clipboardData: data, bubbles: true, })
-		);
+		console.log("💃 do the paste dance");
+		if(requestPermission('clipboardRead', )) {
+			console.log("🧨 firing event on active el", activeElement);
+			activeElement.dispatchEvent(
+				new ClipboardEvent('paste', { clipboardData: data, bubbles: true, })
+			);
+		} else {
+			alert('we need different permissions, boss')
+		};
+
+	}
+
+	const insertByTyping = (activeElement: Element, text: string) => {
+		// Inside the active tab, insert text into the active element using keyboard events
+		for (let char of text) {
+			const event = new KeyboardEvent('keydown', { key: char, bubbles: true });
+			activeElement.dispatchEvent(event);
+		}
 	}
 
 	const insertTextInActiveTab = (text: string) => {
@@ -68,12 +98,12 @@ export default function Popup() {
 		} else if (activeElement && activeElement.isContentEditable) {
 			activeElement.innerText = text;
 		} else {
-			console.log("🏗️ trying to paste")
+			console.log("🏗️ trying to paste or type")
 
 			try {
 				// TODO: figure out how to xs WxtWindowEventMap
 				// console.log("paste event", WxtWindowEventMap.paste);
-				paste(text);
+				insertByTyping(activeElement, text);
 			} catch (err) {
 				console.error("Failed to write to clipboard:", err);
 				alert("Failed to copy text to clipboard. Please check permissions.");
@@ -85,11 +115,13 @@ export default function Popup() {
 	const insertText = async () => {
 		const text = "something interesting";
 
-		await navigator.clipboard.writeText(text);
-		console.log("📋 Text copied to clipboard:", text);
-
 		chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
 			if (tabs[0].id) {
+				requestPermission('clipboardWrite', tabs[0].url);
+
+				//await navigator.clipboard.writeText(text);
+				console.log("📋 Text copied to clipboard:", text);
+
 				console.log("🎉 wrecking your tab", tabs[0]);
 
 				chrome.scripting.executeScript({
