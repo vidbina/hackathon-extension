@@ -33,7 +33,7 @@ interface Task {
 
 const tasks: Task[] = [
   { id: '1', text: 'Data-entry into gsheet', status: 'working' },
-  { id: '2', text: 'Plan spreadsheet data-entry effort', status: 'completed' },
+  { id: '2', text: 'Plan spreadsheet data-entry', status: 'completed' },
   { id: '3', text: 'Search websites for input:', status: 'completed' },
   { id: '4', text: 'https://a16z.com/', status: 'completed', indent: true },
   { id: '5', text: 'https://www.openocean.vc/', status: 'completed', indent: true },
@@ -41,15 +41,17 @@ const tasks: Task[] = [
   { id: '7', text: 'https://atlanticlabs.de/', status: 'completed', indent: true },
   { id: '8', text: 'https://www.balderton.com/', status: 'completed', indent: true },
   { id: '9', text: 'https://www.imaginary.vc', status: 'failed', indent: true },
-  { id: '10', text: 'Plan which input is needed per investor', status: 'completed' }
+  { id: '10', text: 'Plan which input is needed per investor', status: 'completed' },
+  { id: '11', text: 'Analyse task', status: 'completed' },
+  { id: '12', text: 'Qualify instruction', status: 'completed' }
 ]
 
-function Popup() {
+export default function Popup() {
   const [workspace, setWorkspace] = React.useState(workspaces[0])
   const [command, setCommand] = React.useState("Complete the form by finding the missing information")
 
   return (
-    <Card className="w-[400px] h-[600px] flex flex-col">
+    <Card className="w-full h-[600px] flex flex-col">
       {/* Workspace Selector */}
       <div className="p-4 border-b">
         <div className="flex items-center gap-4">
@@ -139,16 +141,3 @@ function Popup() {
     </Card>
   )
 }
-
-function App() {
-	const [count, setCount] = useState(0);
-
-	return (
-		<>
-			<h1>Chorebot</h1>
-			<Popup />
-		</>
-	);
-}
-
-export default App;
