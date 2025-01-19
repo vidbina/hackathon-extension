@@ -28,12 +28,13 @@ interface Task {
 	status: 'working' | 'completed' | 'failed'
 	indent?: boolean
 	url?: string
+	answer?: string
 }
 
 const tasks: Task[] = [
-	{ id: '1', text: 'Data-entry into gsheet', status: 'working' },
-	{ id: '2', text: 'Plan spreadsheet data-entry', status: 'completed' },
-	{ id: '3', text: 'Research websites for input:', status: 'completed' },
+	{ id: '1', text: 'Fill-in Q3', status: 'working', answer: 'nope' },
+	{ id: '2', text: 'Fill-in Q2', status: 'completed', answer: 'bye' },
+	{ id: '3', text: 'Fill-in Q1:', status: 'completed', answer: 'hello' },
 	{ id: '4', text: 'https://a16z.com/', status: 'completed', indent: true },
 	{ id: '5', text: 'https://www.openocean.vc/', status: 'completed', indent: true },
 	{ id: '6', text: 'https://lakestar.com/', status: 'completed', indent: true },
@@ -197,7 +198,7 @@ export default function Popup() {
 										}
 										className={`capitalize opacity-70 font-normal text-xs whitespace-nowrap ${task.status === 'working' ? 'animate-pulse' : ''
 											}`}
-									>
+									onClick={() => { insertText(task.answer) }}>
 										{task.status}
 									</Badge>
 								</div>
