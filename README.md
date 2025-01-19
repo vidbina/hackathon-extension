@@ -19,6 +19,7 @@ Here are some capabilities that we will need to verify:
 ### User TODOs
 
 - [ ] Stub sidebar/sidepane for the main UI
+  see example code from V0 at https://v0.dev/chat/chrome-extension-design-TW1iiZvxgcp?b=b_6mq1WcixGYZ
 - [ ] Create chat input box where user can add their prompt
 - [ ] Create workspace selection dropdown, where user to scope the context to a given workspace
 - [ ] Create Status report list where user can see what the machine is doing
