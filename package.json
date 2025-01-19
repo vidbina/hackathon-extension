@@ -1,6 +1,6 @@
 {
-	"name": "chorebot",
-	"description": "simple helper to do online chores",
+	"name": "workator",
+	"description": "simple helper to help you do online knowledge-worky chores",
 	"version": "0.1.0",
 	"private": true,
 	"scripts": {
