@@ -32,17 +32,17 @@ interface Task {
 }
 
 const allTasks: Task[] = [
-	{ id: '1', text: 'Fill-in Q3', status: 'working', answer: 'nope' },
-	{ id: '2', text: 'Fill-in Q2', status: 'completed', answer: 'bye' },
-	{ id: '3', text: 'Fill-in Q1:', status: 'completed', answer: 'hello' },
-	{ id: '4', text: 'https://a16z.com/', status: 'completed', indent: true },
-	{ id: '5', text: 'https://www.openocean.vc/', status: 'completed', indent: true },
-	{ id: '6', text: 'https://lakestar.com/', status: 'completed', indent: true },
-	{ id: '7', text: 'https://atlanticlabs.de/', status: 'completed', indent: true },
-	{ id: '8', text: 'https://www.balderton.com/', status: 'completed', indent: true },
-	{ id: '9', text: 'https://www.imaginary.vc', status: 'failed', indent: true },
-	{ id: '10', text: 'Plan data fetch list per investor', status: 'completed' },
-	{ id: '11', text: 'Analyse task', status: 'completed' },
+	{ id: '1', text: 'Fill-in Q3', status: 'working', answer: "we're good but if a magical unicorn squirel of a cofounder pops by, we'll take em." },
+	{ id: '2', text: 'Fill-in Q2', status: 'completed', answer: "Na'aman and David" },
+	{ id: '3', text: 'Fill-in Q1:', status: 'completed', answer: "Na'aman and Asaf are childhood friends from way back in Israel. David and Na'aman met on the job at P&B when David hired Na'aman to help push tech, we're deciding to solve the gruntwork problem in innovation/research and we've just spent the most intense few hours together (not only because of the elevator)." },
+	{ id: '4', text: 'Computing answers', status: 'completed', },
+	{ id: '5', text: 'gdrive', status: 'completed', indent: true },
+	{ id: '6', text: 'slack', status: 'completed', indent: true },
+	{ id: '7', text: 'notion', status: 'completed', indent: true },
+	{ id: '8', text: 'news.ycombinator.com', status: 'completed', indent: true },
+	{ id: '9', text: 'Checking data sources', status: 'completed' },
+	{ id: '10', text: 'Extracting application fields', status: 'completed' },
+	{ id: '11', text: 'Analyse application', status: 'completed' },
 	{ id: '12', text: 'Qualify instruction', status: 'completed' }
 ]
 
@@ -60,23 +60,23 @@ export default function Popup() {
 		setIsAnimating(true)
 		setTasks([]) // Reset tasks before starting new animation
 
-		let currentIndex = 0
+		let currentIndex = allTasks.length - 1 // Start from the end
 
 		const addTask = () => {
-			if (currentIndex < allTasks.length) {
-				setTasks(prev => [...prev, allTasks[currentIndex]])
-				currentIndex++
+			if (currentIndex >= 0) {
+				setTasks(prev => [allTasks[currentIndex], ...prev]) // Add to beginning of array
+				currentIndex--
 
-				// Scroll to bottom
+				// Scroll to top since we're prepending
 				if (scrollAreaRef.current) {
 					const scrollContainer = scrollAreaRef.current.querySelector('[data-radix-scroll-area-viewport]')
 					if (scrollContainer) {
-						scrollContainer.scrollTop = scrollContainer.scrollHeight
+						scrollContainer.scrollTop = 0
 					}
 				}
 
-				// Schedule next task with random delay (max 100ms)
-				const delay = Math.random() * 100
+				// Schedule next task with random delay (max 300ms)
+				const delay = Math.random() * 1000
 				setTimeout(addTask, delay)
 			} else {
 				setIsAnimating(false)
@@ -131,6 +131,7 @@ export default function Popup() {
 	const insertTextInActiveTab = (text: string) => {
 		// This function will be injected into the active page
 		const activeElement = document.activeElement;
+		console.log("🎯", activeElement)
 		if (activeElement && (activeElement.tagName === "INPUT" || activeElement.tagName === "TEXTAREA")) {
 			activeElement.value = text;
 		} else if (activeElement && activeElement.isContentEditable) {
@@ -153,7 +154,15 @@ export default function Popup() {
 	const insertText = async (text: string) => {
 		chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
 			if (tabs[0].id) {
-				requestPermission('clipboardWrite', tabs[0].url);
+				const url = tabs[0].url
+
+				console.log("🚪 request permissions for", url);
+				chrome.permissions.getAll((permissions) => {
+					console.log("🚪 current permissions", permissions);
+				});
+
+				requestPermission('clipboardWrite', url);
+				requestPermission('activeTab', url);
 
 				//await navigator.clipboard.writeText(text);
 				console.log("📋 Text copied to clipboard:", text);
@@ -163,7 +172,7 @@ export default function Popup() {
 				chrome.scripting.executeScript({
 					target: { tabId: tabs[0].id },
 					func: insertTextInActiveTab,
-					args: ["Your desired text here"] // Replace with your text
+					args: [text] // Replace with your text
 				});
 			}
 		});
@@ -194,20 +203,21 @@ export default function Popup() {
 				</header>
 
 				{/* Audit Log Header */}
-				<div onClick={startAnimation} className="h-11 shrink-0 px-4 flex items-center gap-2 border-b bg-muted/30 cursor-pointer hover:bg-muted/40 transition-colors">
+				<div className="h-11 shrink-0 px-4 flex items-center gap-2 border-b bg-muted/30 cursor-pointer hover:bg-muted/40 transition-colors" onClick={() => { setTasks([]) }}>
 					<Bot className="w-4 h-4 text-muted-foreground" />
 					<h2 className="text-sm font-medium text-muted-foreground">Activity Log</h2>
 				</div>
 
 				{/* Main Content Area with ScrollArea */}
 				<div className="flex-1 flex flex-col min-h-0">
-					<ScrollArea className="flex-1"  ref={scrollAreaRef}>
+					<ScrollArea className="flex-1" ref={scrollAreaRef}>
 						<div className="p-4">
-							{tasks.map((task) => (
+							{[...tasks].reverse().map((task) => (
 								<div
 									key={task.id}
 									className={`flex items-start justify-between gap-2 py-2 border-b border-border/40 last:border-0 ${task.indent ? 'ml-6' : ''
 										}`}
+									onClick={() => { if (task.answer) { insertText(task.answer) } else { alert("couldn't compute this, boss. info was lacking"); } }}
 								>
 									<span className="text-sm break-all pr-2 flex-1">
 										{task.url ? (
@@ -233,7 +243,7 @@ export default function Popup() {
 										}
 										className={`capitalize opacity-70 font-normal text-xs whitespace-nowrap ${task.status === 'working' ? 'animate-pulse' : ''
 											}`}
-										onClick={() => { insertText(task.answer) }}>
+									>
 										{task.status}
 									</Badge>
 								</div>
@@ -251,7 +261,7 @@ export default function Popup() {
 							className="flex-1 h-10 resize-none bg-background rounded-md border px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 ring-1 ring-ring/20"
 							placeholder="Enter your command..."
 						/>
-						<Button className="h-10 px-4 flex items-center gap-2" onClick={run}>
+						<Button className="h-10 px-4 flex items-center gap-2" onClick={startAnimation}>
 							<Sparkles className="w-4 h-4" />
 							<span className="text-sm">Run</span>
 						</Button>

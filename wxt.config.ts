@@ -13,6 +13,10 @@ export default defineConfig({
 			96: '/icon/icon-96.png',
 			128: '/icon/icon-128.png',
 		},
+		optional_host_permissions: [
+			"https://*/*",
+			"http://*/*"
+		],
 		optional_permissions: ["activeTab", "clipboardRead", "clipboardWrite"],
 	},
 });
