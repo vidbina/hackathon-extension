@@ -11,11 +11,14 @@ This extension built with WXT + React is an attempt to provide browser users an 
 > [!WARNING]
 > A lot doesn't work here yet, but we tried to stub some indication of the basic experience just for the sake of the demo. Plumbing to be sorted later. https://www.loom.com/share/5c3678a979134dae992e07bfab23ed08?sid=2b83d518-d78f-4a3f-820c-63f946e53df2
 
+## Setup
+
+For the sake of convenience, for Chromium we can [persist data](https://wxt.dev/guide/essentials/config/browser-startup.html#persist-data) and reuse the same browser profile (in .wxt/chrome-data) so you don't have to log in from scratch every time you restart the browser to test the extension. It gets tiring quickly so grant yourself a reasonable DX.
+
 ## Background
 
 > [!WARNING]
 > The setup is a bit wonky in that you the sidepanel is only accessible after opening the popup and pressing a button there to make the sidepanel visible upon a next attempt at opening the extension. Nothing I wanted to try to figure out now as the Loom should suffice to get anyone to the sidepanel: https://www.loom.com/share/a8ddde8e2e184909b6a47d23f9561d3c?sid=d1c28725-65ca-4b6b-b324-b26a87acc92a
-
 
 See https://github.com/wxt-dev/examples/tree/main/examples for some examples for specific cases.
 
