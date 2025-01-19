@@ -1,7 +1,7 @@
-import { useState } from "react";
+'use client'
 
 import * as React from "react"
-import { Bot, Send, Sparkles } from 'lucide-react'
+import { Bot, Sparkles } from 'lucide-react'
 import { Card } from "@/components/ui/card"
 import {
   Select,
@@ -10,7 +10,6 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select"
-import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
 import { ScrollArea } from "@/components/ui/scroll-area"
 import { Badge } from "@/components/ui/badge"
@@ -51,9 +50,9 @@ export default function Popup() {
   const [command, setCommand] = React.useState("Complete the form by finding the missing information")
 
   return (
-    <Card className="w-full h-[600px] flex flex-col">
+    <Card className="w-full h-screen max-h-[600px] flex flex-col">
       {/* Workspace Selector */}
-      <div className="p-4 border-b">
+      <header className="h-16 shrink-0 px-4 py-3 border-b">
         <div className="flex items-center gap-4">
           <span className="text-sm font-medium">Workspace</span>
           <Select value={workspace} onValueChange={setWorkspace}>
@@ -69,75 +68,74 @@ export default function Popup() {
             </SelectContent>
           </Select>
         </div>
+      </header>
+
+      {/* Audit Log Header */}
+      <div className="h-11 shrink-0 px-4 flex items-center gap-2 border-b bg-muted/30">
+        <Bot className="w-4 h-4 text-muted-foreground" />
+        <h2 className="text-sm font-medium text-muted-foreground">Activity Log</h2>
       </div>
 
-      {/* Audit Log */}
-      <div className="flex flex-col flex-1">
-        <div className="px-4 py-2 border-b bg-muted/30">
-          <div className="flex items-center gap-2">
-            <Bot className="w-4 h-4 text-muted-foreground" />
-            <h2 className="text-sm font-medium text-muted-foreground">Activity Log</h2>
-          </div>
-        </div>
-        <ScrollArea className="flex-1 p-4">
-          <div className="space-y-3">
-            {tasks.map((task) => (
-              <div
-                key={task.id}
-                className={`flex items-start justify-between gap-2 pb-3 border-b border-border/40 last:border-0 ${
-                  task.indent ? 'ml-6' : ''
+      {/* Scrollable Content */}
+      <ScrollArea className="flex-1">
+        <div className="space-y-3 p-4">
+          {tasks.map((task) => (
+            <div
+              key={task.id}
+              className={`flex items-start justify-between gap-2 pb-3 border-b border-border/40 last:border-0 ${
+                task.indent ? 'ml-6' : ''
+              }`}
+            >
+              <span className="text-sm break-all pr-2 flex-1">
+                {task.url ? (
+                  <a
+                    href={task.url}
+                    className="text-blue-600 hover:underline"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                  >
+                    {task.text}
+                  </a>
+                ) : (
+                  task.text
+                )}
+              </span>
+              <Badge
+                variant={
+                  task.status === 'completed'
+                    ? 'secondary'
+                    : task.status === 'failed'
+                    ? 'destructive'
+                    : 'default'
+                }
+                className={`capitalize opacity-70 font-normal text-xs whitespace-nowrap ${
+                  task.status === 'working' ? 'animate-pulse' : ''
                 }`}
               >
-                <span className="text-sm">
-                  {task.url ? (
-                    <a
-                      href={task.url}
-                      className="text-blue-600 hover:underline"
-                      target="_blank"
-                      rel="noopener noreferrer"
-                    >
-                      {task.text}
-                    </a>
-                  ) : (
-                    task.text
-                  )}
-                </span>
-                <Badge
-                  variant={
-                    task.status === 'completed'
-                      ? 'secondary'
-                      : task.status === 'failed'
-                      ? 'destructive'
-                      : 'default'
-                  }
-                  className={`capitalize opacity-70 font-normal text-xs ${
-                    task.status === 'working' ? 'animate-pulse' : ''
-                  }`}
-                >
-                  {task.status}
-                </Badge>
-              </div>
-            ))}
-          </div>
-        </ScrollArea>
-      </div>
+                {task.status}
+              </Badge>
+            </div>
+          ))}
+        </div>
+      </ScrollArea>
 
       {/* Command Input */}
-      <div className="p-6 border-t bg-muted/30">
-        <div className="flex gap-3 items-start relative">
-          <Sparkles className="w-5 h-5 absolute left-3 top-[18px] text-primary" />
-          <Textarea
-            value={command}
-            onChange={(e) => setCommand(e.target.value)}
-            className="flex-1 pl-10 min-h-[64px] resize-none bg-background shadow-sm"
-            placeholder="Enter your command..."
-          />
-          <Button size="icon" className="shrink-0 h-12 w-12 mt-0">
-            <Send className="w-5 h-5" />
-            <span className="sr-only">Send command</span>
-          </Button>
+      <footer className="h-20 shrink-0 px-6 py-5 border-t bg-muted/30">
+        <div className="flex items-center gap-3 h-full">
+          <div className="flex-1 flex items-center gap-3 p-2">
+            <Textarea
+              value={command}
+              onChange={(e) => setCommand(e.target.value)}
+              className="flex-1 h-5 resize-none bg-background rounded-md border px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 ring-1 ring-ring/20"
+              placeholder="Enter your command..."
+            />
+            <Button className="h-10 px-4 flex items-center gap-2">
+              <Sparkles className="w-4 h-4" />
+              <span className="text-sm">Run</span>
+            </Button>
+          </div>
         </div>
-      </div>
+      </footer>
     </Card>
   )
 }
