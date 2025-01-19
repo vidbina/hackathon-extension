@@ -31,7 +31,7 @@ interface Task {
 	answer?: string
 }
 
-const tasks: Task[] = [
+const allTasks: Task[] = [
 	{ id: '1', text: 'Fill-in Q3', status: 'working', answer: 'nope' },
 	{ id: '2', text: 'Fill-in Q2', status: 'completed', answer: 'bye' },
 	{ id: '3', text: 'Fill-in Q1:', status: 'completed', answer: 'hello' },
@@ -49,14 +49,51 @@ const tasks: Task[] = [
 export default function Popup() {
 	const [workspace, setWorkspace] = React.useState(workspaces[0])
 	const [command, setCommand] = React.useState("fill in the blanks")
+	const [tasks, setTasks] = React.useState<Task[]>([])
+
+	const scrollAreaRef = React.useRef<HTMLDivElement>(null)
+	const [isAnimating, setIsAnimating] = React.useState(false)
+
+	const startAnimation = React.useCallback(() => {
+		if (isAnimating) return
+
+		setIsAnimating(true)
+		setTasks([]) // Reset tasks before starting new animation
+
+		let currentIndex = 0
+
+		const addTask = () => {
+			if (currentIndex < allTasks.length) {
+				setTasks(prev => [...prev, allTasks[currentIndex]])
+				currentIndex++
+
+				// Scroll to bottom
+				if (scrollAreaRef.current) {
+					const scrollContainer = scrollAreaRef.current.querySelector('[data-radix-scroll-area-viewport]')
+					if (scrollContainer) {
+						scrollContainer.scrollTop = scrollContainer.scrollHeight
+					}
+				}
+
+				// Schedule next task with random delay (max 100ms)
+				const delay = Math.random() * 100
+				setTimeout(addTask, delay)
+			} else {
+				setIsAnimating(false)
+			}
+		}
+
+		// Start adding tasks
+		addTask()
+	}, [isAnimating])
 
 	// TODO: Abstract this into a central place later
 	const requestPermission = (permission_type: 'clipboardRead' | 'clipboardWrite', origin: string): boolean => {
 		//const queryOpts = { name: 'clipboard-read', allowWithoutGesture: false };
-		const queryOpts = { permissions: [permission_type], origins: [origin]};
+		const queryOpts = { permissions: [permission_type], origins: [origin] };
 
 		chrome.permissions.request(queryOpts, (granted) => {
-			if(granted) {
+			if (granted) {
 				console.log("yay");
 				return true;
 			} else {
@@ -72,7 +109,7 @@ export default function Popup() {
 		data.setData('text', text);
 
 		console.log("💃 do the paste dance");
-		if(requestPermission('clipboardRead', )) {
+		if (requestPermission('clipboardRead',)) {
 			console.log("🧨 firing event on active el", activeElement);
 			activeElement.dispatchEvent(
 				new ClipboardEvent('paste', { clipboardData: data, bubbles: true, })
@@ -113,9 +150,7 @@ export default function Popup() {
 		}
 	}
 
-	const insertText = async () => {
-		const text = "something interesting";
-
+	const insertText = async (text: string) => {
 		chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
 			if (tabs[0].id) {
 				requestPermission('clipboardWrite', tabs[0].url);
@@ -159,14 +194,14 @@ export default function Popup() {
 				</header>
 
 				{/* Audit Log Header */}
-				<div className="h-11 shrink-0 px-4 flex items-center gap-2 border-b bg-muted/30">
+				<div onClick={startAnimation} className="h-11 shrink-0 px-4 flex items-center gap-2 border-b bg-muted/30 cursor-pointer hover:bg-muted/40 transition-colors">
 					<Bot className="w-4 h-4 text-muted-foreground" />
 					<h2 className="text-sm font-medium text-muted-foreground">Activity Log</h2>
 				</div>
 
 				{/* Main Content Area with ScrollArea */}
 				<div className="flex-1 flex flex-col min-h-0">
-					<ScrollArea className="flex-1">
+					<ScrollArea className="flex-1"  ref={scrollAreaRef}>
 						<div className="p-4">
 							{tasks.map((task) => (
 								<div
@@ -198,7 +233,7 @@ export default function Popup() {
 										}
 										className={`capitalize opacity-70 font-normal text-xs whitespace-nowrap ${task.status === 'working' ? 'animate-pulse' : ''
 											}`}
-									onClick={() => { insertText(task.answer) }}>
+										onClick={() => { insertText(task.answer) }}>
 										{task.status}
 									</Badge>
 								</div>
@@ -226,3 +261,4 @@ export default function Popup() {
 		</div>
 	)
 }
+
