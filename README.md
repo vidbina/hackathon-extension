@@ -2,6 +2,9 @@
 
 This extension built with WXT + React is an attempt to provide browser users an AI-enabled chore-running machine.
 
+> [!WARNING]
+> The setup is a bit wonky in that you the sidepanel is only accessible after opening the popup and pressing a button there to make the sidepanel visible upon a next attempt at opening the extension. Nothing I wanted to try to figure out now as the Loom should suffice to get anyone to the sidepanel: https://www.loom.com/share/a8ddde8e2e184909b6a47d23f9561d3c?sid=d1c28725-65ca-4b6b-b324-b26a87acc92a
+
 ## Background
 
 See https://github.com/wxt-dev/examples/tree/main/examples for some examples for specific cases.
