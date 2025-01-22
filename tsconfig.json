@@ -9,6 +9,9 @@
 		"noImplicitAny": true,
 		"noUnusedLocals": true,
 		"noUnusedParameters": true,
+		"paths": {
+			"@/*": ["./*"]
+		},
 		"removeComments": true,
 		"resolveJsonModule": true,
 		"skipLibCheck": true,

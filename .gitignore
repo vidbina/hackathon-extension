@@ -1,3 +1,5 @@
+wxt-ext.config.ts
+
 # Logs
 logs
 *.log
@@ -24,3 +26,16 @@ web-ext.config.ts
 *.njsproj
 *.sln
 *.sw?
+
+# direnv
+.direnv
+
+# Devenv
+.devenv*
+devenv.local.nix
+
+# direnv
+.direnv
+
+# pre-commit
+.pre-commit-config.yaml
