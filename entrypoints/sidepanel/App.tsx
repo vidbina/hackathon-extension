@@ -46,6 +46,154 @@ const allTasks: Task[] = [
 	{ id: '12', text: 'Qualify instruction', status: 'completed' }
 ]
 
+// For a given assignment, we produce a suggestion of steps and then work
+// through them step-by-step and adapt as necessary
+// (assignment) -> [suggested_steps]
+// for every step, we should now be able to produce the next step:
+// (step_input) -> step_output
+type StepInput =
+	| { type: 'browseTo'; url: string }
+	| { type: 'capturePage' }
+	| { type: 'scrollHorizontallyTo'; value: number; unit: 'percentage' | 'pixels' }
+	| { type: 'focusItem'; identifier: string }
+	| { type: 'promptUser'; message: string }
+	| { type: 'click' }
+	| { type: 'enterText'; text: string }
+
+// type StepOutput = {
+// 	status: 'success' | 'pending' | 'failure',
+// 	input: StepInput,
+// 	history: string[],
+// 	context: {
+// 		// arbitrary fields
+// 	},
+// }
+
+const findFlightOnGoogle: StepInput[] = [
+	{ type: 'browseTo', url: 'https://www.google.com/travel/flights' },
+	{ type: 'focusItem', identifier: '[placeholder="Where from?"]' },
+	{ type: 'enterText', text: 'New York' },
+	{ type: 'click', },
+	{ type: 'focusItem', identifier: '[placeholder="Where to?"]' },
+	{ type: 'enterText', text: 'Zurich' },
+	{ type: 'click', },
+	{ type: 'focusItem', identifier: '[aria-label="Search flights"]' },
+	{ type: 'click', },
+	{ type: 'capturePage' }
+]
+
+// Background task execution helpers
+const executeInBackground = {
+	browseTo: async (tabId: number, url: string): Promise<void> => {
+		await chrome.tabs.update(tabId, { url });
+		return new Promise((resolve) => {
+			chrome.tabs.onUpdated.addListener(function listener(tid, info) {
+				if (tid === tabId && info.status === 'complete') {
+					chrome.tabs.onUpdated.removeListener(listener);
+					resolve();
+				}
+			});
+		});
+	},
+
+	executeScript: async <T>(tabId: number, func: () => T, args?: any[]): Promise<T> => {
+		const [{ result }] = await chrome.scripting.executeScript({
+			target: { tabId },
+			func,
+			args
+		});
+		return result;
+	},
+
+	capturePage: async (tabId: number) => {
+		return await executeInBackground.executeScript(tabId, () => {
+			return {
+				width: document.documentElement.scrollWidth,
+				height: document.documentElement.scrollHeight,
+				title: document.title
+			};
+		});
+	},
+
+	focusItem: async (tabId: number, selector: string) => {
+		return await executeInBackground.executeScript(
+			tabId,
+			(sel: string) => {
+				const el = document.querySelector(sel);
+				if (!el) throw new Error(`Element not found: ${sel}`);
+				(el as HTMLElement).focus();
+			},
+			[selector]
+		);
+	},
+
+	click: async (tabId: number) => {
+		return await executeInBackground.executeScript(tabId, () => {
+			if (!document.activeElement) throw new Error('No active element');
+			(document.activeElement as HTMLElement).click();
+		});
+	},
+
+	enterText: async (tabId: number, text: string) => {
+		return await executeInBackground.executeScript(
+			tabId,
+			(input: string) => {
+				if (!document.activeElement) throw new Error('No active element');
+				const el = document.activeElement as HTMLElement;
+				
+				if ('value' in el) {
+					(el as HTMLInputElement).value = input;
+					el.dispatchEvent(new Event('input', { bubbles: true }));
+					el.dispatchEvent(new Event('change', { bubbles: true }));
+				} else if (el.isContentEditable) {
+					el.textContent = input;
+					el.dispatchEvent(new Event('input', { bubbles: true }));
+				} else {
+					throw new Error('Active element cannot accept text input');
+				}
+			},
+			[text]
+		);
+	}
+};
+
+// Execute a sequence of steps
+const executeSteps = async (steps: StepInput[]): Promise<void> => {
+	const tab = await chrome.tabs.create({ active: true });
+	if (!tab.id) throw new Error('Failed to create tab');
+
+	for (const step of steps) {
+		try {
+			switch (step.type) {
+				case 'browseTo':
+					await executeInBackground.browseTo(tab.id, step.url);
+					break;
+				case 'capturePage':
+					await executeInBackground.capturePage(tab.id);
+					break;
+				case 'focusItem':
+					await executeInBackground.focusItem(tab.id, step.identifier);
+					break;
+				case 'click':
+					await executeInBackground.click(tab.id);
+					break;
+				case 'enterText':
+					await executeInBackground.enterText(tab.id, step.text);
+					break;
+				case 'promptUser':
+					// Handle user prompts separately
+					break;
+				case 'scrollHorizontallyTo':
+					// Implement scroll handling
+					break;
+			}
+		} catch (error) {
+			console.error(`Step failed: ${step.type}`, error);
+			throw error;
+		}
+	}
+};
+
 export default function Popup() {
 	const [workspace, setWorkspace] = React.useState(workspaces[0])
 	const [command, setCommand] = React.useState("fill in the blanks")
@@ -142,7 +290,12 @@ export default function Popup() {
 			try {
 				// TODO: figure out how to xs WxtWindowEventMap
 				// console.log("paste event", WxtWindowEventMap.paste);
-				insertByTyping(activeElement, text);
+				console.log("we have to solve this!")
+				//insertByTyping(activeElement, text);
+				for (let char of text) {
+					const event = new KeyboardEvent('keydown', { key: char, bubbles: true });
+					activeElement.dispatchEvent(event);
+				}
 			} catch (err) {
 				console.error("Failed to write to clipboard:", err);
 				alert("Failed to copy text to clipboard. Please check permissions.");
@@ -212,12 +365,23 @@ export default function Popup() {
 				<div className="flex-1 flex flex-col min-h-0">
 					<ScrollArea className="flex-1" ref={scrollAreaRef}>
 						<div className="p-4">
+							<div className={`flex items-start justify-between gap-2 py-2 border-b border-border/40 last:border-0`}>
+								<Button className="h-10 px-4 flex items-center gap-2" onClick={() => {console.log("A")}}>enter text</Button>
+								<Button className="h-10 px-4 flex items-center gap-2" onClick={() => {console.log("B")}}>select calendar add</Button>
+							</div>
 							{[...tasks].reverse().map((task) => (
 								<div
 									key={task.id}
 									className={`flex items-start justify-between gap-2 py-2 border-b border-border/40 last:border-0 ${task.indent ? 'ml-6' : ''
 										}`}
-									onClick={() => { if (task.answer) { insertText(task.answer) } else { alert("couldn't compute this, boss. info was lacking"); } }}
+									onClick={() => {
+										console.log('task', task)
+										if (task.answer) {
+											insertText(task.answer)
+										} else {
+											alert("couldn't compute this, boss. info was lacking");
+										}
+									}}
 								>
 									<span className="text-sm break-all pr-2 flex-1">
 										{task.url ? (
@@ -271,4 +435,3 @@ export default function Popup() {
 		</div>
 	)
 }
-
