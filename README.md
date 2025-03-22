@@ -15,6 +15,20 @@ This extension built with WXT + React is an attempt to provide browser users an 
 
 For the sake of convenience, for Chromium we can [persist data](https://wxt.dev/guide/essentials/config/browser-startup.html#persist-data) and reuse the same browser profile (in .wxt/chrome-data) so you don't have to log in from scratch every time you restart the browser to test the extension. It gets tiring quickly so grant yourself a reasonable DX.
 
+## Usage
+
+Run the dev setup with:
+
+```bash
+pnpm dev
+```
+
+Build the extension with:
+
+```bash
+pnpm build
+```
+
 ## Background
 
 > [!WARNING]
@@ -121,7 +135,7 @@ zenuml
 Plan out an instruction into a set of known actions
 ##### Data-entry
 Note to instruct that data-entry in gdoc, gsheet and webforms work differently. For example, when the structure of a gsheet is known, we can compose the CSV variant of the input in the target cells (provided that they are adjacent) select the top-left cell of a range and paste the content into it.
-$\text{enter_data()}$
+$\text{enter\_data()}$
 ##### Browse for details
 $\text{browse(website, details=[])}$
 Browse a given website for a limited set of details and keep track of which details have been sourced and which haven't
